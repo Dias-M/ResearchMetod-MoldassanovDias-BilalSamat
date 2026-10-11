@@ -1,0 +1,11 @@
+text,label,source,split
+"Dear customer, your MegaBank account is suspended. Please verify your password immediately: http://megabank-secure.example.invalid/login",1,synthetic,train
+"Urgent: unusual sign-in to your CloudDrive profile. Click the link to confirm your information: http://verify-clouddrive.example.invalid/a",1,synthetic,train
+"ParcelGo notice: your parcel is on hold. Update your delivery details today: http://track-parcelgo.example.invalid/pay",1,synthetic,train
+"Important security update for PayFast. Confirm your account within 24 hours or it will be closed: http://payfast.example.invalid/x",1,synthetic,val
+"Your MailBox storage is full. Please verify your account now to keep receiving messages: http://mailbox-help.example.invalid/v",1,synthetic,test
+"Hi Alex, the meeting about the quarterly report moves to Thursday at 14:00. Please bring the draft slides.",0,synthetic,train
+"Hello Dana, attached are the lecture notes for week 5. Let me know if anything is unclear before the seminar.",0,synthetic,train
+"Marat, are we still on for lunch tomorrow? I booked a table for four people near the office.",0,synthetic,train
+"Reminder from the library: the book you requested is ready for pickup until the end of the week.",0,synthetic,val
+"Hi Nina, thanks for the draft. I added comments to sections two and three, please check them tomorrow.",0,synthetic,test

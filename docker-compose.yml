@@ -1,0 +1,8 @@
+services:
+  lab:
+    build: .
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --ServerApp.token=''
+    ports:
+      - "127.0.0.1:8888:8888"   # localhost only; token is disabled
+    volumes:
+      - .:/workspace
