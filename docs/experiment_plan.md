@@ -6,7 +6,7 @@ Status: **draft for supervisor approval** (Task 2, weeks 4-6).
 |---|---|
 | Student | Dias Moldassanov, Bilal Samat |
 | Supervisor / reviewer | Aisultan Shoiynbek |
-| Approved on | 11.10.2026 |
+| Approved on ||
 
 ## 1. Goal and hypotheses
 
