@@ -1,0 +1,48 @@
+seeds: [42, 43, 44, 45, 46]
+paths:
+  raw: data/raw
+  processed: data/processed
+  results: results
+split:            # fractions of unique emails; stratified by label x source
+  train: 0.70
+  val: 0.15
+  test: 0.15
+cleaning:
+  min_chars: 30
+  max_chars: 4000
+target_fpr: 0.01   # operating point: threshold fixed on VALIDATION ham at this FPR
+paraphrase:
+  hf_model: Qwen/Qwen2.5-1.5B-Instruct
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 0.9
+  batch_size: 4
+  seed: 42
+quality_filter:
+  min_len_ratio: 0.5
+  max_len_ratio: 1.5
+  min_url_retention: 1.0
+models:
+  tfidf_lr:
+    max_features: 50000
+    ngram_range: [1, 2]
+    C: 4.0
+  distilbert:
+    name: distilbert-base-uncased
+    epochs: 2
+    lr: 5.0e-5
+    batch_size: 16
+    max_len: 256
+  zero_shot_llm:
+    name: Qwen/Qwen2.5-1.5B-Instruct
+    max_chars: 2000
+    batch_size: 4
+stats:
+  bootstrap_n: 10000
+  alpha: 0.05
+benchmark:
+  sample_seeds: [42]
+  step_timeout_s: 3600     # per pipeline step
+  log_file: results/benchmark.log
+
+
