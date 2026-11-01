@@ -1,10 +1,17 @@
-# Exact versions used to produce the reported results (Python 3.13.16, Linux x86_64)
-numpy==2.5.3
-pandas==3.0.5
-scipy==1.18.1
-matplotlib==3.11.2
+# Exact pins for direct dependencies (Python 3.11).
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+scipy==1.13.1
+statsmodels==0.14.2
+pyyaml==6.0.1
+tqdm==4.66.4
+tabulate==0.9.0
+matplotlib==3.9.0
 seaborn==0.13.2
-# Only needed to open/re-execute the notebook (not used by src/*.py):
-jupyter
-nbconvert
-ipykernel
+jupyterlab==4.2.3
+# Transformer / LLM parts. The Dockerfile installs the CPU build of torch first.
+torch==2.3.1
+transformers==4.42.4
+datasets==2.20.0
+accelerate==0.32.1
