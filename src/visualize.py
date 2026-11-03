@@ -61,6 +61,9 @@ def fig_recall(summary: pd.DataFrame, target_fpr: float, out: Path) -> None:
             y = [g.loc[v, "recall_mean"] for v in ("original", "paraphrased")]
             lo = [g.loc[v, "recall_ci_lo"] for v in ("original", "paraphrased")]
             hi = [g.loc[v, "recall_ci_hi"] for v in ("original", "paraphrased")]
+            if "recall_wilson_lo" in g and np.nanmax(np.array(hi) - np.array(lo)) < 1e-9:   # seeds identical (deterministic detector)
+                lo = [g.loc[v, "recall_wilson_lo"] for v in ("original", "paraphrased")]
+                hi = [g.loc[v, "recall_wilson_hi"] for v in ("original", "paraphrased")]
             yerr = None if np.isnan(lo).any() else [np.array(y) - lo, np.array(hi) - np.array(y)]
             ax.errorbar(x + (i - (len(models) - 1) / 2) * 0.04, y, yerr=yerr, color=pal[i], marker=MARKERS[i % 4],
                         linestyle=LINES[i % 4], capsize=4, elinewidth=1.4, markersize=8, linewidth=2,
@@ -73,8 +76,10 @@ def fig_recall(summary: pd.DataFrame, target_fpr: float, out: Path) -> None:
     axes[0][0].set_ylabel(f"Recall at FPR = {target_fpr:.0%}\n(share of phishing detected)")
     axes[0][-1].legend(title="Detector", loc="lower left", frameon=True)
     n_seeds = int(summary["n_seeds"].min())
-    note = "95% bootstrap CI" if n_seeds >= 2 else "no CI: single seed"
-    fig.suptitle(f"Recall before and after LLM paraphrasing ({note}, {n_seeds} seeds)", y=1.02, fontsize=13)
+    wilson_used = "recall_wilson_lo" in summary and (summary["recall_ci_hi"] - summary["recall_ci_lo"]).max() < 1e-9
+    note = ("95% Wilson CI over test e-mails; seeds identical" if wilson_used
+            else "95% bootstrap CI over seeds" if n_seeds >= 2 else "no CI: single seed")
+    fig.suptitle(f"Recall before and after LLM paraphrasing ({note}, {n_seeds} seeds)", y=1.02, fontsize=12)
     fig.tight_layout()
     save(fig, out, "fig1_recall_original_vs_paraphrased")
 
@@ -104,6 +109,31 @@ def fig_margin(flagged: pd.DataFrame, out: Path) -> None:
     save(fig, out, "fig2_score_margin_distribution")
 
 
+def fig_model_check(check: pd.DataFrame, out: Path) -> None:
+    """Fig. 3: recall of paraphrased e-mails, measured vs predicted by the location-shift model."""
+    models = list(dict.fromkeys(check["model"]))
+    cond = "baseline" if "baseline" in set(check["condition"]) else check["condition"].iloc[0]
+    g = check[check["condition"] == cond].set_index("model").loc[models]
+    pal = sns.color_palette("colorblind", 2)
+    x = np.arange(len(models))
+    fig, ax = plt.subplots(figsize=(max(5.5, 2.2 * len(models) + 2.5), 4.4))
+    ax.bar(x - 0.19, g["recall_para_measured"], 0.36, color=pal[0], edgecolor="black", label="Measured")
+    ax.bar(x + 0.19, g["recall_para_model"], 0.36, color=pal[1], edgecolor="black", hatch="//",
+           label="Model (location shift)")
+    for xi, (m, mo) in enumerate(zip(g["recall_para_measured"], g["recall_para_model"])):
+        ax.text(xi - 0.19, m + 0.015, f"{m:.2f}", ha="center", fontsize=9)
+        ax.text(xi + 0.19, mo + 0.015, f"{mo:.2f}", ha="center", fontsize=9)
+    ax.set_xticks(x)
+    ax.set_xticklabels([nice(m) for m in models])
+    ax.set_ylim(0, 1.08)
+    ax.set_xlabel("Detector")
+    ax.set_ylabel("Recall of paraphrased phishing\n(at FPR = 1%, mean over seeds)")
+    ax.set_title("Model check: predicted vs measured recall", fontsize=12)
+    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1), frameon=True)
+    fig.tight_layout()
+    save(fig, out, "fig3_model_check")
+
+
 if __name__ == "__main__":
     with open(ROOT / "config" / "config.yaml", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
@@ -115,3 +145,5 @@ if __name__ == "__main__":
     set_style()
     fig_recall(pd.read_csv(proc / "metrics_summary.csv"), cfg["target_fpr"], out)
     fig_margin(pd.read_csv(proc / "predictions_flagged.csv"), out)
+    if (proc / "model_check.csv").exists():
+        fig_model_check(pd.read_csv(proc / "model_check.csv"), out)
