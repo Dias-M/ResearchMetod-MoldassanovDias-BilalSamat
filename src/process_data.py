@@ -4,6 +4,7 @@ Input : results/metrics.csv, results/metrics_aug.csv, results/predictions*.csv
 Output: data/processed/metrics_summary.csv      (one row per model x condition x text version)
         data/processed/paired_delta.csv         (paraphrased minus original recall, per model x condition)
         data/processed/predictions_flagged.csv  (per-email scores with a non-destructive IQR outlier flag)
+        data/processed/model_check.csv          (location-shift model vs measured recall, see src/signal_model.py)
 
 Notes
 - "warm-up" does not exist in this project (no latency logs), so there is nothing to drop.
@@ -17,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
+
+from signal_model import check_cells, summarise_check
 
 ROOT = Path(__file__).resolve().parents[1]
 N_BOOT = 10_000
@@ -46,6 +49,17 @@ def boot_ci(x: np.ndarray, rng: np.random.Generator, n: int = N_BOOT) -> tuple[f
     return float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
+def wilson(k: float, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson 95% interval of a proportion k/n (sampling uncertainty over the test e-mails)."""
+    if n <= 0:
+        return float("nan"), float("nan")
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return float(c - h), float(c + h)
+
+
 def summarise(metrics: pd.DataFrame, rng: np.random.Generator) -> pd.DataFrame:
     rows = []
     for (model, cond, version), g in metrics.groupby(["model", "condition", "version"], sort=False):
@@ -59,6 +73,7 @@ def summarise(metrics: pd.DataFrame, rng: np.random.Generator) -> pd.DataFrame:
             row[f"{col}_p25"], row[f"{col}_p75"] = np.percentile(x, [25, 75])
         row["recall_ci_lo"], row["recall_ci_hi"] = boot_ci(g["recall"].to_numpy(), rng)
         row["fpr_ci_lo"], row["fpr_ci_hi"] = boot_ci(g["fpr"].to_numpy(), rng)
+        row["recall_wilson_lo"], row["recall_wilson_hi"] = wilson(row["recall_mean"] * row["n_phish"], row["n_phish"])
         row["fpr_guardrail_ok"] = bool(row["fpr_mean"] <= FPR_LIMIT)
         rows.append(row)
     return pd.DataFrame(rows)
@@ -105,7 +120,11 @@ if __name__ == "__main__":
     delta = paired_delta(metrics, rng)
     flagged = flag_outliers(pred, metrics)
 
+    cells = check_cells(flagged)
     summary.to_csv(proc / "metrics_summary.csv", index=False)
+    if len(cells):
+        cells.to_csv(proc / "model_check_cells.csv", index=False)
+        summarise_check(cells).to_csv(proc / "model_check.csv", index=False)
     delta.to_csv(proc / "paired_delta.csv", index=False)
     flagged.to_csv(proc / "predictions_flagged.csv", index=False)
 
