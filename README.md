@@ -92,3 +92,20 @@ OS and library versions.
 ## License
 
 MIT, see [`LICENSE`](LICENSE). Datasets keep their own licences.
+
+## Task 3: results, analysis and visualization
+
+| What | Where |
+|---|---|
+| Step-by-step commands from corpora to report | [`docs/task3_runbook.md`](docs/task3_runbook.md) |
+| Domain model: STRIDE matrix, attack tree, metric points, mathematical model | [`docs/domain_model.md`](docs/domain_model.md) |
+| Processing (outliers flagged not removed, bootstrap CI over seeds, guardrail FPR <= 2%) | `src/process_data.py` |
+| Mathematical model (location shift of detector scores) | `src/signal_model.py` |
+| Figures (fig1-fig3, `.pdf` + 300 DPI `.png`) | `src/visualize.py`, `reports/figures/` |
+| Analysis notebook | `notebooks/01_task3_analysis.ipynb` |
+| Corpus build (English filter, dedupe, leakage markers) | `scripts/00_build_corpus.py` |
+| Report built from the real result files | `src/make_report.py` -> `reports/TASK3_report.pdf` |
+
+**Reported run (see [`docs/run_notes.md`](docs/run_notes.md)).** Real data: Phishing Pot (1,639 phishing e-mails after cleaning) and CEAS-08 ham (14,865). 97 matched test pairs; detector TF-IDF + LR. Result: recall at FPR = 1% is 0.979 on original and on paraphrased e-mails (0 of 97 e-mails lost, upper 95% bound on the lost share 3.0%), although paraphrasing lowers the score by 0.53 on average (95% CI [-0.67, -0.39]); the detector has a large safety margin on this data. Deviations from the plan (paraphrases written by Claude instead of Qwen2.5-1.5B, DistilBERT / zero-shot LLM / RQ3 not run) are listed in the notes.
+
+The report and the notebook accept only a real run (>= 2 seeds, >= 30 matched phishing pairs); the 10-row sample is for code checks only.

@@ -27,6 +27,8 @@ data/processed/*
 !data/processed/metrics_summary.csv
 !data/processed/paired_delta.csv
 !data/processed/model_check.csv
+!data/processed/model_check_cells.csv
+!data/processed/predictions_flagged.csv
 !data/processed/paraphrases.csv
 !data/raw/.gitkeep
 !data/processed/.gitkeep
