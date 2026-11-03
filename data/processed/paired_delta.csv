@@ -1,0 +1,2 @@
+model,condition,n_seeds,delta_recall_mean,delta_ci_lo,delta_ci_hi
+tfidf_lr,baseline,5,0.0,0.0,0.0

@@ -1,6 +1,6 @@
 # Data
 
-Nothing in `data/raw/` or `data/processed/` is committed. Rebuild it with the scripts.
+`data/raw/` and the large `data/processed/emails.csv` are not committed; rebuild them with the scripts (order in `docs/task3_runbook.md`). The small result tables of the reported run are committed: `metrics_summary.csv`, `paired_delta.csv`, `model_check.csv`, `model_check_cells.csv`, `predictions_flagged.csv`, `paraphrases.csv`.
 
 ## Schema
 
@@ -8,17 +8,14 @@ Nothing in `data/raw/` or `data/processed/` is committed. Rebuild it with the sc
 `label`: 1 = phishing, 0 = legitimate (ham). `split`: train / val / test (stratified by label x source).
 Paraphrases: `data/processed/paraphrases.csv`: `id, text_para, ok, backend`.
 
-## Sources
+## Sources (used in the reported run)
 
 | Source | Class | How to get it | Notes |
 |--------|-------|---------------|-------|
-| Nazario phishing corpus | phishing | Manual download of the `.mbox` files from the author's page (monkey.org/~jose/phishing). Put them into `data/raw/`. | Availability and licence must be checked before use. |
-| Additional phishing corpus (modern) | phishing | To be chosen in W4 (candidates: public Kaggle/HF phishing e-mail sets). Put a CSV with `text,label,source` into `data/raw/`. | Needed to reduce the source/label confound (see plan, section 8). |
-| Enron-Spam (ham only) | ham | `python scripts/01_download_data.py --only enron` (Hugging Face `SetFit/enron_spam`) | Spam rows are dropped: spam is not phishing. |
-| SpamAssassin public corpus (ham only) | ham | `python scripts/01_download_data.py --only spamassassin` | Easy-ham archive from 2003. |
-| CSDMC2010 | ham | Optional, manual. | Used in related work [10]. |
+| Phishing Pot (github.com/rf-peixoto/phishing_pot, CC BY-NC 4.0, commit 80a4867) | phishing | `git clone` into a folder, then `python scripts/00_build_corpus.py --phish-dir <folder>/email --ceas <CEAS_08.csv>` | 12,865 real honeypot e-mails; English only, near-duplicates collapsed (1,639 kept). |
+| CEAS-08 (github.com/PHP4Life/phishing-email-dataset, `CEAS_08.csv`) | ham | Download the CSV | Only rows with label 0 are used; spam rows are dropped. |
 
-URLs in the download script were not checked against the live servers. Check each one before the first run.
+Nazario, Enron-Spam and SpamAssassin from the first plan were not used in this run. `scripts/01_download_data.py` is the old downloader and is untested.
 
 ## Sample data
 

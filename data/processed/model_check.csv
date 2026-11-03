@@ -1,0 +1,2 @@
+model,condition,recall_orig_measured,recall_orig_model,recall_para_measured,recall_para_model,abs_error_pp,delta,delta_ci_lo,delta_ci_hi,median_margin_orig,sigma_ratio_para_orig,breakeven_shift_2pp
+tfidf_lr,baseline,0.9793814432989689,0.9970521964937754,0.9793814432989689,0.9915600889231415,1.217864562417248,-0.5298145838787732,-0.669714767337602,-0.3899144004199444,4.272301189297615,0.9803865627936016,-1.1014454325261482
