@@ -52,7 +52,7 @@ python src/visualize.py                       # reports/figures/fig1..fig3 (.pdf
 
 ## 7. Notebook and report
 ```bash
-cd notebooks && jupyter nbconvert --to notebook --execute --inplace 01_task3_analysis.ipynb && cd ..
+cd notebooks && jupyter nbconvert --to notebook --execute --inplace 01_data_analysis.ipynb && cd ..
 python src/make_report.py --group "YOUR-GROUP" --repo "https://github.com/<user>/<repo>"
 ```
 `make_report.py` stops if there are fewer than 2 seeds or fewer than 30 matched pairs, so it cannot be built from the 10-row sample.
