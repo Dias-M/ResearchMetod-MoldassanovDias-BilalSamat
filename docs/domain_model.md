@@ -41,7 +41,7 @@ flowchart LR
 | T5 | **D**enial of service | Very long or crafted texts slow the (LLM) detector, or a flood of false alarms buries analysts | Detector | 100k-character mail, mail bombing | Truncate to `max_chars`, rate limit, guardrail FPR <= 2% | Realised FPR (guardrail) |
 | T6 | **E**levation of privilege | Compromised model supply chain | Model weights, dependencies | Tampered weights or package | Exact version pins, official model hubs, hash check | `requirements.txt` |
 
-Threat **T2b** is the one evaluated experimentally (`notebooks/01_task3_analysis.ipynb`).
+Threat **T2b** is the one evaluated experimentally (`notebooks/01_data_analysis.ipynb`).
 
 ## 3. Attack tree for the goal "phishing mail reaches the inbox"
 
