@@ -1,0 +1,29 @@
+\section{Introduction}
+\label{sec:intro}
+
+Phishing remains one of the most costly forms of cybercrime: the FBI Internet Crime Complaint Center report for 2025, as summarised by SpyCloud, puts losses from account takeover, phishing and fraud at USD~20.9 billion~\cite{thies_fbi_2026}. Mail gateways answer this threat with content detectors that score the text of an e-mail and block it above a threshold. Recent work uses classical models, transformers and LLMs for this task~\cite{koide_chatspamdetector_2024,uddin_explainable_2024,thapa_phishing_2025,kuikel_evaluating_2025,ganiuly_trustworthiness_2025}.
+
+The same LLMs help attackers. Heiding et~al.\ show that LLMs can write convincing phishing messages~\cite{heiding_devising_2023} and can run fully automated spear-phishing campaigns that were validated on human subjects~\cite{heiding_evaluating_2024}. An attacker who already owns a working phishing text can therefore ask an LLM for a new wording in seconds, at no cost per variant. A detector that has learned the surface wording of known campaigns may miss such variants.
+
+Among the studies we reviewed, the detection papers report detection quality on fixed test sets, while the attack papers measure human victims or the quality of the generated text. We did not find in this set a paired measurement of how much the recall of a detector falls when the \emph{same} phishing e-mails are rewritten, with the decision threshold held fixed. This is the gap that our study addresses.
+
+We therefore run a controlled paired experiment. Each phishing e-mail is scored in its original and paraphrased form by the same detector, and the threshold is chosen once on original validation data so that only the phishing text differs between the two conditions (Section~\ref{sec:method}).
+
+\subsection{Research Question and Contributions}
+\label{sec:intro:rq}
+
+Our research question is:
+\begin{description}
+  \item[RQ1] Does LLM paraphrasing of phishing e-mails lower the recall of a text-based detector at a fixed false-positive rate of 1\%?
+\end{description}
+The null hypothesis is that recall does not change; the alternative is that recall decreases. The answer is reported in the results table of Section~\ref{sec:results}. Training with paraphrased e-mails and an analysis by e-mail length were planned as further questions and are left to future work.
+
+The contributions of this paper are:
+\begin{itemize}
+  \item a paired evaluation protocol with a threshold fixed on original validation data, so that a change in recall can only come from the rewritten text;
+  \item a reproducible pipeline from public corpora to figures, with fixed seeds and all result tables in a public repository;
+  \item an empirical answer for a TF-IDF and logistic-regression detector: recall at FPR~1\% is unchanged and none of 97 e-mails is lost;
+  \item a simple location-shift model of the detector score that predicts the paraphrased recall within 1.2 percentage points without being fitted to it.
+\end{itemize}
+
+The rest of the paper is organised as follows. Section~\ref{sec:method} describes the data, the detector, the paraphrasing and the statistics. Results and discussion follow in Sections~\ref{sec:results} and~\ref{sec:discussion}.

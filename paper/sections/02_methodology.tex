@@ -1,0 +1,89 @@
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Data}
+\label{sec:method:data}
+Phishing e-mails come from Phishing Pot~\cite{peixoto_phishing_pot_2026}, a public collection of 12,865 real e-mails gathered by honeypots. Legitimate e-mails (label~0) come from the CEAS-08 file~\cite{php4life_phishing_dataset}; its spam rows are discarded, because spam is not phishing. We keep English e-mails only and collapse near-duplicate campaigns, which leaves 1,639 phishing and 14,865 legitimate e-mails. Two label giveaways were neutralised in both classes before the split: the anonymiser string of the corpus and four-digit years. The e-mails are split 70/15/15 into training, validation and test sets, stratified by label (11,552 / 2,475 / 2,477 e-mails). The test set holds 246 phishing and 2,231 legitimate e-mails.
+
+\subsection{Problem Formulation}
+\label{sec:method:problem}
+A detector assigns a score $s(x)$ to an e-mail $x$; a higher score means more phishing-like. An e-mail is flagged if $s(x)>t$. Let $V_0$ be the legitimate validation e-mails, $\alpha=0.01$ the target false-positive rate and $s_{(k)}$ the $k$-th largest score in $V_0$. The threshold is
+\begin{equation}
+  t \;=\; s_{(\lfloor \alpha |V_0| \rfloor + 1)},
+  \label{eq:threshold}
+\end{equation}
+so that at most $\alpha|V_0|$ legitimate e-mails score above $t$. The threshold is computed once on the original data and reused for every condition. For a set of phishing e-mails $X=\{x_1,\dots,x_n\}$ the primary metric, recall (Eq.~\eqref{eq:recall}), is
+\begin{equation}
+  \Rec(X) \;=\; \frac{1}{n}\sum_{i=1}^{n}\mathbb{I}\!\left[s(x_i)>t\right].
+  \label{eq:recall}
+\end{equation}
+Let $x_i'$ be the paraphrase of $x_i$. The paired outcome counts
+\begin{align}
+  b&=\bigl|\{i: s(x_i)>t,\ s(x_i')\le t\}\bigr|,\nonumber\\
+  c&=\bigl|\{i: s(x_i)\le t,\ s(x_i')>t\}\bigr|,
+  \label{eq:discordant}
+\end{align}
+the e-mails lost and gained by paraphrasing. The effect of paraphrasing is $\Delta=\Rec(X)-\Rec(X')$. The hypotheses of RQ1 are $H_0\colon \Delta=0$ against $H_1\colon \Delta>0$.
+
+To explain the result we use a location-shift model of the scores. Original phishing scores are modelled as $s\sim\mathcal{N}(\mu,\sigma^2)$, so $\Rec(X)=1-\Phi\bigl((t-\mu)/\sigma\bigr)$, where $\Phi$ is the standard normal distribution function. Paraphrasing shifts the scores by $\delta=\overline{s(x_i')-s(x_i)}$ and leaves $\sigma$ unchanged:
+\begin{equation}
+  \Rec(X') \;=\; 1-\Phi\!\left(\frac{t-\mu-\delta}{\sigma}\right).
+  \label{eq:shift}
+\end{equation}
+The prediction of Eq.~\eqref{eq:shift} is compared with the measured recall; it is not fitted to it.
+
+\subsection{Detector and Paraphrasing}
+\label{sec:method:pipeline}
+Fig.~\ref{fig:pipeline} shows the pipeline. The detector is TF-IDF with logistic regression, trained on original training e-mails only; its settings are listed in Table~\ref{tab:params}. The detector is deterministic, so the five seeds give identical numbers; uncertainty is therefore reported by the statistics of Section~\ref{sec:method:stats}.
+
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=5mm and 6mm,
+  box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize, minimum height=9mm, inner sep=3pt},
+  arr/.style={-{Stealth[length=2mm]}, thick}]
+  \node[box] (clean) {Corpora\\clean, dedupe};
+  \node[box, right=of clean] (split) {Split\\70/15/15};
+  \node[box, right=of split] (train) {Train\\TF-IDF + LR};
+  \node[box, below=of train] (thr) {Threshold $t$\\Eq.~\eqref{eq:threshold}};
+  \node[box, left=of thr] (para) {Paraphrase\\97 test e-mails};
+  \node[box, left=of para] (score) {Score\\original and\\paraphrase};
+  \node[box, below=of para] (stat) {Recall, McNemar,\\bootstrap, model};
+  \draw[arr] (clean)--(split);
+  \draw[arr] (split)--(train);
+  \draw[arr] (train)--(thr);
+  \draw[arr] (thr)--(para);
+  \draw[arr] (para)--(score);
+  \draw[arr] (score)|-(stat);
+\end{tikzpicture}}
+\caption{Experimental pipeline. The threshold is fixed on original validation data before the paraphrases are scored.}
+\label{fig:pipeline}
+\end{figure}
+
+The planned paraphraser (Qwen2.5-1.5B-Instruct) could not run in our environment. Instead, 97 phishing e-mails of the test split were paraphrased by an LLM (Claude) with one fixed instruction: keep the meaning, the links and the addresses, and change the wording and the sentence structure. The e-mails are a random sample (seed~0) of the 111 test phishing e-mails of 160 to 900 characters; three explicit adult e-mails were skipped. A paraphrase is accepted if its length is 0.5 to 1.5 times the original and all links are kept; all 97 passed. Our conclusions therefore concern short e-mails and one paraphrasing LLM.
+
+\begin{table}[t]
+\caption{Parameters of the experiment.}
+\label{tab:params}
+\centering
+\small
+\begin{tabular}{@{}p{0.60\columnwidth}p{0.34\columnwidth}@{}}
+\toprule
+Parameter & Value \\
+\midrule
+Target FPR $\alpha$ (validation ham) & 0.01 \\
+Guardrail: realised FPR & $\le 0.02$ \\
+TF-IDF: features; n-grams; tf & 50,000; 1--2; sublinear \\
+Logistic regression & $C=4$, 1000 iter. \\
+Seeds & 42--46 \\
+Paired test e-mails $n$ & 97 \\
+Bootstrap resamples & 10,000 \\
+Confidence level & 95\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Statistics}
+\label{sec:method:stats}
+We test $H_0$ with the one-sided exact McNemar test on the discordant pairs $b$ and $c$ of Eq.~\eqref{eq:discordant}. When $b=0$, the one-sided 95\% upper bound of the lost share is the Clopper--Pearson bound. Recall over e-mails is given with a 95\% Wilson interval, and the score shift $\delta$ with a paired bootstrap interval. Outliers are flagged by the interquartile-range rule but not removed. Realised FPR is tracked as a guardrail and must stay below 2\%; it is reported, never filtered. Seeds, library versions and all scripts are in the public repository\footnote{\url{https://github.com/Dias-M/ResearchMetod-MoldassanovDias-BilalSamat}}.
