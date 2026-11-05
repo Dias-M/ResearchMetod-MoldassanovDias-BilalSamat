@@ -1,0 +1,48 @@
+% Lab 9 -- IEEE conference paper skeleton (Task 4). Compile with pdfLaTeX + BibTeX (Overleaf default).
+\documentclass[conference]{IEEEtran}
+% To switch to ACM: \documentclass[sigconf]{acmart} (and use acmart author/abstract commands; remove IEEEtran blocks).
+% One column: \documentclass[conference,onecolumn]{IEEEtran} is not allowed by IEEE; use journal option for testing only.
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}   % mathematics
+\usepackage{booktabs}          % publication-quality tables
+\usepackage{graphicx}          % figures
+\usepackage{tikz}              % pipeline diagram
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\usepackage{cite}              % sorted, compressed numeric citations [1]--[3]
+\usepackage[hidelinks]{hyperref}  % load last (cross-references, URLs)
+
+\newcommand{\Rec}{\mathrm{Rec}}
+\newcommand{\FPR}{\mathrm{FPR}}
+
+\begin{document}
+
+\title{Robustness of Text-Based Phishing E-mail Detectors\\to LLM Paraphrasing}
+
+\author{\IEEEauthorblockN{Dias Moldassanov}
+\IEEEauthorblockA{Narxoz University\\Almaty, Kazakhstan}
+\and
+\IEEEauthorblockN{Bilal Samat}
+\IEEEauthorblockA{Narxoz University\\Almaty, Kazakhstan}}
+
+\maketitle
+
+\begin{abstract}
+Large language models (LLMs) can rewrite a phishing e-mail in fresh wording. We ask whether such paraphrasing lowers the recall of a text-based detector at a fixed false-positive rate. We build a paired experiment: the same 97 phishing e-mails are scored by one detector (TF-IDF with logistic regression) in their original and paraphrased form, and the decision threshold is fixed on original validation data. Recall at a false-positive rate of 1\% is 0.979 for both versions; none of the 97 e-mails is lost (one-sided 95\% upper bound of the lost share: 3.0\%). The mean detector score falls by 0.53, but the threshold is far away. A ceiling effect and a difference in era between the two corpora limit this conclusion. [Draft: Results and Discussion are written in Task~4.]
+\end{abstract}
+
+\begin{IEEEkeywords}
+phishing detection, large language models, paraphrasing, robustness, reproducibility
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_methodology}
+\input{sections/03_results}
+\input{sections/04_discussion}
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
